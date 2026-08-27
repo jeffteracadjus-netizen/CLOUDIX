@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CLOUDIX AI</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+    <div class="background-glow glow-one"></div>
+    <div class="background-glow glow-two"></div>
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <img
+                src="assets/logo.png"
+                alt="CLOUDIX"
+                class="logo"
+            >
+
+            <div class="brand-text">
+                <span>CLOUDIX</span>
+                <small>AI PLATFORM</small>
+            </div>
+
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <nav class="navigation">
+
+            <p class="menu-title">MENU PRINCIPAL</p>
+
+            <button class="nav-item active" onclick="selectModule('dashboard', this)">
+                <i class="fa-solid fa-grid-2"></i>
+                <span>Dashboard</span>
+            </button>
+
+            <button class="nav-item" onclick="selectModule('vendas', this)">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Vendas</span>
+            </button>
+
+            <button class="nav-item" onclick="selectModule('marketing', this)">
+                <i class="fa-solid fa-bullhorn"></i>
+                <span>Marketing</span>
+            </button>
+
+            <button class="nav-item" onclick="selectModule('financeiro', this)">
+                <i class="fa-solid fa-wallet"></i>
+                <span>Financeiro</span>
+            </button>
+
+            <button class="nav-item" onclick="selectModule('atendimento', this)">
+                <i class="fa-solid fa-headset"></i>
+                <span>Atendimento</span>
+            </button>
+
+            <button class="nav-item" onclick="selectModule('estrategia', this)">
+                <i class="fa-solid fa-chess"></i>
+                <span>Estratégia</span>
+            </button>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <button class="nav-item">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configurações</span>
+            </button>
+
+            <div class="user-profile">
+
+                <div class="avatar">
+                    J
+                </div>
+
+                <div class="user-info">
+                    <strong>Administrador</strong>
+                    <span>Empresa CLOUDIX</span>
+                </div>
+
+                <i class="fa-solid fa-ellipsis"></i>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main-content">
+
+        <!-- HEADER -->
+
+        <header class="topbar">
+
+            <div class="page-info">
+
+                <span class="system-status">
+                    <span class="status-dot"></span>
+                    CLOUDIX AI ONLINE
+                </span>
+
+                <h1 id="page-title">
+                    Dashboard
+                </h1>
+
+            </div>
+
+            <div class="top-actions">
+
+                <button class="icon-button">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification"></span>
+                </button>
+
+                <div class="company-selector">
+
+                    <div class="company-icon">
+                        C
+                    </div>
+
+                    <div>
+                        <strong>CLOUDIX</strong>
+                        <small>Empresa ativa</small>
+                    </div>
+
+                    <i class="fa-solid fa-chevron-down"></i>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- DASHBOARD -->
+
+        <section id="dashboard" class="content-section active-section">
+
+            <div class="welcome">
+
+                <div>
+
+                    <span class="eyebrow">
+                        INTELIGÊNCIA ARTIFICIAL EMPRESARIAL
+                    </span>
+
+                    <h2>
+                        Olá, <span>Administrador</span>.
+                    </h2>
+
+                    <p>
+                        A inteligência da CLOUDIX está pronta para analisar
+                        os dados da sua empresa.
+                    </p>
+
+                </div>
+
+                <div class="ai-orb">
+
+                    <div class="orb-inner">
+                        <i class="fa-solid fa-sparkles"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- MODULES -->
+
+            <div class="section-heading">
+
+                <div>
+                    <span>FUNCIONALIDADES</span>
+                    <h3>Escolha uma área para começar</h3>
+                </div>
+
+            </div>
+
+
+            <div class="modules-grid">
+
+                <div class="module-card vendas"
+                     onclick="selectModule('vendas')">
+
+                    <div class="module-icon">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+
+                    <div class="module-content">
+
+                        <span class="module-number">
+                            01
+                        </span>
+
+                        <h3>Vendas</h3>
+
+                        <p>
+                            Analise desempenho comercial,
+                            leads, clientes e oportunidades.
+                        </p>
+
+                    </div>
+
+                    <i class="fa-solid fa-arrow-up-right-from-square module-arrow"></i>
+
+                </div>
+
+
+                <div class="module-card marketing"
+                     onclick="selectModule('marketing')">
+
+                    <div class="module-icon">
+                        <i class="fa-solid fa-bullhorn"></i>
+                    </div>
+
+                    <div class="module-content">
+
+                        <span class="module-number">
+                            02
+                        </span>
+
+                        <h3>Marketing</h3>
+
+                        <p>
+                            Analise campanhas, conteúdo,
+                            audiência e crescimento.
+                        </p>
+
+                    </div>
+
+                    <i class="fa-solid fa-arrow-up-right-from-square module-arrow"></i>
+
+                </div>
+
+
+                <div class="module-card financeiro"
+                     onclick="selectModule('financeiro')">
+
+                    <div class="module-icon">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+
+                    <div class="module-content">
+
+                        <span class="module-number">
+                            03
+                        </span>
+
+                        <h3>Financeiro</h3>
+
+                        <p>
+                            Analise receitas, despesas,
+                            margem e resultados.
+                        </p>
+
+                    </div>
+
+                    <i class="fa-solid fa-arrow-up-right-from-square module-arrow"></i>
+
+                </div>
+
+
+                <div class="module-card atendimento"
+                     onclick="selectModule('atendimento')">
+
+                    <div class="module-icon">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+
+                    <div class="module-content">
+
+                        <span class="module-number">
+                            04
+                        </span>
+
+                        <h3>Atendimento</h3>
+
+                        <p>
+                            Analise satisfação, suporte,
+                            SLA e experiência do cliente.
+                        </p>
+
+                    </div>
+
+                    <i class="fa-solid fa-arrow-up-right-from-square module-arrow"></i>
+
+                </div>
+
+
+                <div class="module-card estrategia"
+                     onclick="selectModule('estrategia')">
+
+                    <div class="module-icon">
+                        <i class="fa-solid fa-chess"></i>
+                    </div>
+
+                    <div class="module-content">
+
+                        <span class="module-number">
+                            05
+                        </span>
+
+                        <h3>Estratégia</h3>
+
+                        <p>
+                            Transforme dados em decisões
+                            estratégicas para sua empresa.
+                        </p>
+
+                    </div>
+
+                    <i class="fa-solid fa-arrow-up-right-from-square module-arrow"></i>
+
+                </div>
+
+            </div>
+
+
+            <!-- AI CHAT -->
+
+            <div class="ai-panel">
+
+                <div class="ai-panel-header">
+
+                    <div class="ai-title">
+
+                        <div class="ai-mini-icon">
+                            <i class="fa-solid fa-sparkles"></i>
+                        </div>
+
+                        <div>
+                            <strong>CLOUDIX AI</strong>
+                            <span>Assistente inteligente empresarial</span>
+                        </div>
+
+                    </div>
+
+                    <span class="ai-online">
+                        ONLINE
+                    </span>
+
+                </div>
+
+
+                <div class="chat-message">
+
+                    <div class="ai-avatar">
+                        C
+                    </div>
+
+                    <div class="message-bubble">
+
+                        <strong>CLOUDIX AI</strong>
+
+                        <p>
+                            Posso analisar seus dados, identificar
+                            padrões e gerar insights para ajudar
+                            nas decisões da sua empresa.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="chat-input">
+
+                    <input
+                        type="text"
+                        id="chat-input"
+                        placeholder="Pergunte algo para a CLOUDIX AI..."
+                    >
+
+                    <button onclick="sendMessage()">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- MODULE PAGE -->
+
+        <section id="module-page" class="content-section">
+
+            <div class="module-page-header">
+
+                <button class="back-button" onclick="showDashboard()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Dashboard
+                </button>
+
+                <div class="module-page-title">
+
+                    <div id="selected-module-icon" class="large-module-icon">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+
+                    <div>
+                        <span id="selected-module-label">
+                            VENDAS
+                        </span>
+
+                        <h2 id="selected-module-title">
+                            Inteligência de Vendas
+                        </h2>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="analysis-layout">
+
+                <div class="upload-card">
+
+                    <div class="upload-icon">
+                        <i class="fa-solid fa-file-excel"></i>
+                    </div>
+
+                    <h3>Analise seus dados</h3>
+
+                    <p>
+                        Envie uma planilha da sua empresa e a
+                        CLOUDIX AI encontrará informações relevantes.
+                    </p>
+
+                    <label class="upload-button">
+
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                        Enviar planilha
+
+                        <input
+                            type="file"
+                            id="spreadsheet-input"
+                            accept=".xlsx,.xls,.csv"
+                            onchange="handleFile(this)"
+                        >
+
+                    </label>
+
+                    <span class="file-info">
+                        XLSX, XLS ou CSV
+                    </span>
+
+                </div>
+
+
+                <div class="insight-card">
+
+                    <div class="insight-header">
+
+                        <div>
+                            <span>ANÁLISE INTELIGENTE</span>
+                            <h3>Insights da CLOUDIX</h3>
+                        </div>
+
+                        <div class="pulse">
+                            <span></span>
+                        </div>
+
+                    </div>
+
+                    <div id="analysis-content">
+
+                        <div class="empty-analysis">
+
+                            <i class="fa-solid fa-brain"></i>
+
+                            <p>
+                                Envie uma planilha para começar
+                                a análise inteligente.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

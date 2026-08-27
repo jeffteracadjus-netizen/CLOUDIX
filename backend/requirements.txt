@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+python-jose[cryptography]
+pwdlib[argon2]
+python-multipart
+pandas
+openpyxl
+email-validator
