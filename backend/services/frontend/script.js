@@ -42,14 +42,23 @@ const modules = {
 };
 
 
-/* SELECIONAR MÓDULO */
+/* ==========================================================
+   OBTER TOKEN DE AUTENTICAÇÃO DO NAVEGADOR
+   ========================================================== */
+
+function getAuthToken() {
+    return localStorage.getItem("token") || localStorage.getItem("access_token");
+}
+
+
+/* ==========================================================
+   SELECIONAR MÓDULO
+   ========================================================== */
 
 function selectModule(moduleName, button = null) {
 
     if (moduleName === "dashboard") {
-
         showDashboard();
-
         return;
     }
 
@@ -59,7 +68,6 @@ function selectModule(moduleName, button = null) {
         return;
     }
 
-
     document
         .querySelector("#dashboard")
         .classList.remove("active-section");
@@ -68,21 +76,17 @@ function selectModule(moduleName, button = null) {
         .querySelector("#module-page")
         .classList.add("active-section");
 
-
     document
         .querySelector("#page-title")
         .innerText = module.title;
-
 
     document
         .querySelector("#selected-module-label")
         .innerText = module.label;
 
-
     document
         .querySelector("#selected-module-title")
         .innerText = module.pageTitle;
-
 
     const icon = document.querySelector(
         "#selected-module-icon i"
@@ -91,39 +95,31 @@ function selectModule(moduleName, button = null) {
     icon.className =
         "fa-solid " + module.icon;
 
-
     document
         .querySelectorAll(".nav-item")
         .forEach(item => {
-
             item.classList.remove("active");
-
         });
 
-
     if (button) {
-
         button.classList.add("active");
-
     } else {
-
         const navButton =
             document.querySelector(
                 `.nav-item[onclick*="'${moduleName}'"]`
             );
 
         if (navButton) {
-
             navButton.classList.add("active");
-
         }
-
     }
 
 }
 
 
-/* DASHBOARD */
+/* ==========================================================
+   DASHBOARD
+   ========================================================== */
 
 function showDashboard() {
 
@@ -139,37 +135,31 @@ function showDashboard() {
         .querySelector("#page-title")
         .innerText = "Dashboard";
 
-
     document
         .querySelectorAll(".nav-item")
         .forEach(item => {
-
             item.classList.remove("active");
-
         });
-
 
     const buttons =
         document.querySelectorAll(".nav-item");
 
     buttons.forEach(button => {
-
         if (
             button.innerText
                 .toLowerCase()
                 .includes("dashboard")
         ) {
-
             button.classList.add("active");
-
         }
-
     });
 
 }
 
 
-/* CHAT - INTEGRAÇÃO REAL COM A CLOUDIX AI */
+/* ==========================================================
+   CHAT REAL DA CLOUDIX AI
+   ========================================================== */
 
 async function sendMessage() {
 
@@ -179,27 +169,22 @@ async function sendMessage() {
     const message =
         input.value.trim();
 
-
     if (!message) {
         return;
     }
 
-
     const chat =
         document.querySelector(".chat-message");
 
-
+    // 1. Inserir a mensagem do usuário no chat
     const userMessage =
         document.createElement("div");
-
 
     userMessage.style.display = "flex";
     userMessage.style.justifyContent = "flex-end";
     userMessage.style.marginTop = "10px";
 
-
     userMessage.innerHTML = `
-
         <div
             style="
                 background: rgba(86,90,166,0.15);
@@ -211,23 +196,18 @@ async function sendMessage() {
                 font-size: 11px;
             "
         >
-
             ${escapeHtml(message)}
-
         </div>
-
     `;
-
 
     chat.parentElement.insertBefore(
         userMessage,
         document.querySelector(".chat-input")
     );
 
-
     input.value = "";
 
-    // Criar o balão de resposta da IA com indicador de carregamento
+    // 2. Inserir o balão de carregamento da CLOUDIX AI
     const aiMessage =
         document.createElement("div");
 
@@ -235,43 +215,56 @@ async function sendMessage() {
         "chat-message";
 
     aiMessage.innerHTML = `
-
         <div class="ai-avatar">
             C
         </div>
-
         <div class="message-bubble">
-
             <strong>CLOUDIX AI</strong>
-
             <p class="ai-text-response">
                 <em>Analisando sua solicitação...</em>
             </p>
-
         </div>
-
     `;
-
 
     chat.parentElement.insertBefore(
         aiMessage,
         document.querySelector(".chat-input")
     );
 
-    const token = localStorage.getItem("token") || localStorage.getItem("access_token");
+    const textContainer = aiMessage.querySelector(".ai-text-response");
+    const token = getAuthToken();
+
+    // Verificação de autenticação no cliente
+    if (!token) {
+        textContainer.innerHTML = `
+            <span style="color: #ff6b6b;">
+                <strong>Sessão não encontrada:</strong> Faça login na plataforma para utilizar a CLOUDIX AI.
+            </span>
+        `;
+        return;
+    }
 
     try {
         const response = await fetch("/ai/chat", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({ message: message })
         });
 
+        // Tratamento de sessão expirada ou não autorizada
+        if (response.status === 401) {
+            textContainer.innerHTML = `
+                <span style="color: #ff6b6b;">
+                    <strong>Sessão expirada:</strong> Por favor, faça login novamente no sistema.
+                </span>
+            `;
+            return;
+        }
+
         const data = await response.json();
-        const textContainer = aiMessage.querySelector(".ai-text-response");
 
         if (response.ok) {
             let replyText = "";
@@ -285,19 +278,28 @@ async function sendMessage() {
 
             textContainer.innerHTML = formatMarkdown(replyText);
         } else {
-            textContainer.innerHTML = `<span style="color: #ff6b6b;">Erro: ${escapeHtml(data.detail || "Não foi possível obter resposta do servidor.")}</span>`;
+            textContainer.innerHTML = `
+                <span style="color: #ff6b6b;">
+                    Erro: ${escapeHtml(data.detail || "Não foi possível obter a resposta da IA.")}
+                </span>
+            `;
         }
 
     } catch (error) {
-        console.error("Erro na comunicação com o backend:", error);
-        const textContainer = aiMessage.querySelector(".ai-text-response");
-        textContainer.innerHTML = `<span style="color: #ff6b6b;">Erro ao conectar com a CLOUDIX AI. Tente novamente em instantes.</span>`;
+        console.error("Erro na comunicação com a API:", error);
+        textContainer.innerHTML = `
+            <span style="color: #ff6b6b;">
+                Erro de conexão com o servidor da CLOUDIX AI. Tente novamente em instantes.
+            </span>
+        `;
     }
 
 }
 
 
-/* SEGURANÇA E FORMATAÇÃO DE TEXTO */
+/* ==========================================================
+   SEGURANÇA E FORMATAÇÃO DE TEXTO
+   ========================================================== */
 
 function escapeHtml(text) {
 
@@ -315,13 +317,17 @@ function formatMarkdown(text) {
     let formatted = escapeHtml(text);
     // Transforma **negrito** em <strong>negrito</strong>
     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Transforma marcadores (* item) em bullet points
+    formatted = formatted.replace(/^\s*\*\s+(.*)$/gmol, '• $1');
     // Transforma quebras de linha em <br>
     formatted = formatted.replace(/\n/g, '<br>');
     return formatted;
 }
 
 
-/* UPLOAD E ANÁLISE REAL DE PLANILHA */
+/* ==========================================================
+   UPLOAD E ANÁLISE REAL DE PLANILHA
+   ========================================================== */
 
 async function handleFile(input) {
 
@@ -329,34 +335,17 @@ async function handleFile(input) {
         return;
     }
 
-
     const file =
         input.files[0];
-
 
     const analysis =
         document.querySelector(
             "#analysis-content"
         );
 
-
     analysis.innerHTML = `
-
-        <div
-            style="
-                padding: 25px 0;
-            "
-        >
-
-            <div
-                style="
-                    display:flex;
-                    align-items:center;
-                    gap:12px;
-                    margin-bottom:18px;
-                "
-            >
-
+        <div style="padding: 25px 0;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
                 <div
                     style="
                         width:40px;
@@ -369,123 +358,96 @@ async function handleFile(input) {
                         color:#F28705;
                     "
                 >
-
                     <i class="fa-solid fa-file-excel"></i>
-
                 </div>
 
                 <div>
-
-                    <strong
-                        style="
-                            font-size:12px;
-                        "
-                    >
+                    <strong style="font-size:12px;">
                         ${escapeHtml(file.name)}
                     </strong>
-
-                    <div
-                        style="
-                            color:#59667a;
-                            font-size:9px;
-                            margin-top:3px;
-                        "
-                    >
+                    <div style="color:#59667a; font-size:9px; margin-top:3px;">
                         Arquivo recebido pela CLOUDIX AI
                     </div>
-
                 </div>
-
             </div>
 
-
-            <div
-                style="
-                    height:4px;
-                    background:#182231;
-                    border-radius:10px;
-                    overflow:hidden;
-                "
-            >
-
+            <div style="height:4px; background:#182231; border-radius:10px; overflow:hidden;">
                 <div
                     id="progress-bar"
-                    style="
-                        height:100%;
-                        width:15%;
-                        background:#565AA6;
-                        transition:0.5s;
-                    "
+                    style="height:100%; width:15%; background:#565AA6; transition:0.5s;"
                 ></div>
-
             </div>
 
-
-            <div
-                id="analysis-status"
-                style="
-                    color:#687589;
-                    font-size:9px;
-                    margin-top:12px;
-                "
-            >
+            <div id="analysis-status" style="color:#687589; font-size:9px; margin-top:12px;">
                 Enviando planilha para o servidor...
             </div>
 
             <div
                 id="insights-container"
-                style="
-                    margin-top:20px;
-                    font-size:11px;
-                    color:#b9c1d0;
-                    line-height:1.6;
-                "
+                style="margin-top:20px; font-size:11px; color:#b9c1d0; line-height:1.6;"
             ></div>
-
         </div>
-
     `;
 
     const progressBar = document.querySelector("#progress-bar");
     const statusText = document.querySelector("#analysis-status");
     const insightsContainer = document.querySelector("#insights-container");
+    const token = getAuthToken();
 
-    const token = localStorage.getItem("token") || localStorage.getItem("access_token");
+    if (!token) {
+        progressBar.style.width = "100%";
+        progressBar.style.background = "#e74c3c";
+        statusText.innerHTML = `
+            <span style="color: #e74c3c;">
+                <strong>Erro de Autenticação:</strong> Você precisa estar logado para enviar arquivos.
+            </span>
+        `;
+        return;
+    }
+
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-        // Passo 1: Enviar arquivo para o backend (/financial/upload)
-        progressBar.style.width = "45%";
-        statusText.innerText = "Processando dados da planilha...";
+        // Passo 1: Enviar planilha para o backend (/financial/upload)
+        progressBar.style.width = "40%";
+        statusText.innerText = "Processando e estruturando dados da planilha...";
 
         const uploadResponse = await fetch("/financial/upload", {
             method: "POST",
             headers: {
-                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                "Authorization": `Bearer ${token}`
             },
             body: formData
         });
 
-        if (!uploadResponse.ok) {
-            const errData = await uploadResponse.json().catch(() => ({}));
-            throw new Error(errData.detail || "Erro ao fazer upload da planilha.");
+        if (uploadResponse.status === 401) {
+            throw new Error("Sessão expirada. Faça login novamente na plataforma.");
         }
 
-        // Passo 2: Solicitar análise completa da planilha para o Gemini (/ai/chat)
+        if (!uploadResponse.ok) {
+            const errData = await uploadResponse.json().catch(() => ({}));
+            throw new Error(errData.detail || "Erro ao fazer upload do arquivo.");
+        }
+
+        // Passo 2: Solicitar diagnóstico inteligente da planilha ao Gemini (/ai/chat)
         progressBar.style.width = "75%";
-        statusText.innerText = "Gerando inteligência e insights financeiros...";
+        statusText.innerText = "Gerando diagnósticos e insights financeiros...";
 
         const aiResponse = await fetch("/ai/chat", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({
                 message: "Analise detalhadamente a planilha financeira recém-enviada e apresente um resumo executivo com métricas, pontos de atenção e recomendações."
             })
         });
+
+        if (aiResponse.status === 401) {
+            throw new Error("Sessão expirada ao consultar a IA.");
+        }
 
         const aiData = await aiResponse.json();
 
@@ -493,7 +455,7 @@ async function handleFile(input) {
             throw new Error(aiData.detail || "Erro ao consultar a CLOUDIX AI.");
         }
 
-        // Passo 3: Exibir a resposta real da IA no bloco de Insights
+        // Passo 3: Exibir a resposta real da IA na tela
         progressBar.style.width = "100%";
         statusText.innerText = "Análise financeira concluída com sucesso!";
 
@@ -508,7 +470,9 @@ async function handleFile(input) {
 
         insightsContainer.innerHTML = `
             <div style="background: rgba(18, 26, 38, 0.6); border: 1px solid rgba(86, 90, 166, 0.25); border-radius: 8px; padding: 15px; margin-top: 10px;">
-                <strong style="color: #fff; font-size: 12px; display: block; margin-bottom: 10px;">📊 INSIGHTS GERADOS PELA CLOUDIX AI:</strong>
+                <strong style="color: #fff; font-size: 12px; display: block; margin-bottom: 10px;">
+                    📊 INSIGHTS GERADOS PELA CLOUDIX AI:
+                </strong>
                 ${formatMarkdown(resultText)}
             </div>
         `;
