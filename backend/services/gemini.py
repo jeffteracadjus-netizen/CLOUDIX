@@ -9,10 +9,16 @@ if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
 
-def ask_gemini(prompt: str, retries: int = 3, delay: int = 3):
+def ask_gemini(
+    prompt: str,
+    previous_interaction_id=None,
+    retries: int = 3,
+    delay: int = 3,
+    **kwargs
+):
     """
-    Envia solicitações para o Gemini com sistema de re-tentativa automática (retry pattern)
-    em caso de limite de requisições excedido (Erro 429).
+    Envia solicitações para o Gemini com suporte a re-tentativa automática (retry pattern)
+    e aceita parâmetros opcionais do histórico como previous_interaction_id.
     """
     if not GEMINI_API_KEY:
         return {"text": "Chave da API do Gemini não configurada no servidor."}
@@ -28,13 +34,16 @@ def ask_gemini(prompt: str, retries: int = 3, delay: int = 3):
             error_msg = str(e)
 
             # Verifica se o erro é de cota/limite de requisições (429)
-            if any(k in error_msg for k in ["429", "Quota", "Rate limit", "RESOURCE_EXHAUSTED"]):
+            if any(
+                k in error_msg
+                for k in ["429", "Quota", "Rate limit", "RESOURCE_EXHAUSTED"]
+            ):
                 if attempt < retries - 1:
                     print(
                         f"[Gemini] Cota temporária atingida. Aguardando {delay}s (Tentativa {attempt + 1}/{retries})..."
                     )
                     time.sleep(delay)
-                    delay *= 2  # Aumenta o tempo de espera (3s, 6s, 12s)
+                    delay *= 2
                     continue
 
             print(f"[Gemini Error]: {error_msg}")
