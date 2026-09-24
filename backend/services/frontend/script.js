@@ -47,8 +47,31 @@ const modules = {
    ========================================================== */
 
 function getAuthToken() {
-    return localStorage.getItem("token") || localStorage.getItem("access_token");
+    // Procura por chaves comuns onde o token JWT possa ter sido gravado
+    return localStorage.getItem("token") ||
+           localStorage.getItem("access_token") ||
+           localStorage.getItem("user_token") ||
+           localStorage.getItem("jwt") ||
+           sessionStorage.getItem("token") ||
+           sessionStorage.getItem("access_token");
 }
+
+
+/* ==========================================================
+   VERIFICAÇÃO DE SESSÃO AO CARREGAR A PÁGINA
+   ========================================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+    const token = getAuthToken();
+    
+    // Se não houver token salvo, você pode redirecionar o usuário para a página de login
+    // Basta descomentar a linha abaixo ajustando a rota do seu login:
+    /*
+    if (!token && window.location.pathname !== "/login") {
+        window.location.href = "/login";
+    }
+    */
+});
 
 
 /* ==========================================================
@@ -144,7 +167,7 @@ async function sendMessage() {
     const chatInputArea = document.querySelector(".chat-input");
     const parentContainer = chatInputArea ? chatInputArea.parentElement : document.body;
 
-    // 1. Inserir a mensagem do utilizador no chat
+    // 1. Inserir a mensagem do usuário no chat
     const userMessage = document.createElement("div");
     userMessage.style.display = "flex";
     userMessage.style.justifyContent = "flex-end";
@@ -185,7 +208,7 @@ async function sendMessage() {
         <div class="message-bubble">
             <strong>CLOUDIX AI</strong>
             <p class="ai-text-response">
-                <em>Analisando a sua solicitação...</em>
+                <em>Analisando sua solicitação...</em>
             </p>
         </div>
     `;
@@ -252,7 +275,7 @@ async function sendMessage() {
         console.error("Erro na comunicação com a API:", error);
         textContainer.innerHTML = `
             <span style="color: #ff6b6b;">
-                Erro de ligação com o servidor da CLOUDIX AI. Tente novamente em instantes.
+                Erro de conexão com o servidor da CLOUDIX AI. Tente novamente em instantes.
             </span>
         `;
     }
@@ -359,7 +382,7 @@ async function handleFile(input) {
         if (statusText) {
             statusText.innerHTML = `
                 <span style="color: #e74c3c;">
-                    <strong>Erro de Autenticação:</strong> É necessário estar autenticado para enviar ficheiros.
+                    <strong>Erro de Autenticação:</strong> É necessário estar autenticado para enviar arquivos.
                 </span>
             `;
         }
@@ -371,7 +394,7 @@ async function handleFile(input) {
 
     try {
         if (progressBar) progressBar.style.width = "40%";
-        if (statusText) statusText.innerText = "A processar dados da planilha...";
+        if (statusText) statusText.innerText = "Processando dados da planilha...";
 
         const uploadResponse = await fetch("/financial/upload", {
             method: "POST",
@@ -387,11 +410,11 @@ async function handleFile(input) {
 
         if (!uploadResponse.ok) {
             const errData = await uploadResponse.json().catch(() => ({}));
-            throw new Error(errData.detail || "Erro ao fazer upload do ficheiro.");
+            throw new Error(errData.detail || "Erro ao fazer upload do arquivo.");
         }
 
         if (progressBar) progressBar.style.width = "75%";
-        if (statusText) statusText.innerText = "A gerar diagnósticos e insights financeiros...";
+        if (statusText) statusText.innerText = "Gerando diagnósticos e insights financeiros...";
 
         const aiResponse = await fetch("/ai/chat", {
             method: "POST",
