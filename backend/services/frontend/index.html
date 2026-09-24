@@ -62,7 +62,8 @@
         </nav>
 
         <div class="sidebar-bottom">
-            <button class="nav-item" onclick="openCompanyModal()">
+            <!-- BOTÃO 1: CONFIGURAÇÕES DA CONTA -->
+            <button class="nav-item" onclick="openSettingsModal()">
                 <i class="fa-solid fa-gear"></i>
                 <span>Configurações</span>
             </button>
@@ -93,12 +94,14 @@
             </div>
 
             <div class="top-actions">
-                <button class="icon-button" onclick="openCompanyModal()" title="Configurações da Empresa">
+                <!-- BOTÃO 2: NOTIFICAÇÕES -->
+                <button class="icon-button" onclick="openNotificationsModal()" title="Atualizações da Plataforma">
                     <i class="fa-regular fa-bell"></i>
                     <span class="notification"></span>
                 </button>
 
-                <div class="company-selector" onclick="openCompanyModal()" style="cursor: pointer;">
+                <!-- BOTÃO 3: DADOS DA EMPRESA -->
+                <div class="company-selector" onclick="openCompanyModal()" style="cursor: pointer;" title="Dados da Empresa">
                     <div class="company-icon" id="topbar-company-icon">C</div>
                     <div>
                         <strong id="topbar-company-name">Empresa CLOUDIX</strong>
@@ -268,7 +271,7 @@
 
     </main>
 
-    <!-- MODAL DE AUTENTICAÇÃO (LOGIN / CADASTRO) -->
+    <!-- MODAL 1: AUTENTICAÇÃO (LOGIN / CADASTRO) -->
     <div id="auth-modal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
@@ -278,48 +281,95 @@
                 </div>
             </div>
 
-            <!-- FORM LOGIN -->
             <form id="form-login" onsubmit="handleLogin(event)">
                 <div class="input-group">
                     <label><i class="fa-regular fa-envelope"></i> E-mail</label>
                     <input type="email" id="login-email" placeholder="seu@email.com" required>
                 </div>
-
                 <div class="input-group">
                     <label><i class="fa-solid fa-lock"></i> Senha</label>
                     <input type="password" id="login-password" placeholder="••••••••" required>
                 </div>
-
                 <div id="login-error" class="error-msg"></div>
-
                 <button type="submit" class="primary-btn">Acessar Plataforma</button>
             </form>
 
-            <!-- FORM REGISTER -->
             <form id="form-register" onsubmit="handleRegister(event)" style="display: none;">
                 <div class="input-group">
                     <label><i class="fa-regular fa-user"></i> Nome Completo</label>
                     <input type="text" id="register-name" placeholder="Seu nome" required>
                 </div>
-
                 <div class="input-group">
                     <label><i class="fa-regular fa-envelope"></i> E-mail</label>
                     <input type="email" id="register-email" placeholder="seu@email.com" required>
                 </div>
-
                 <div class="input-group">
                     <label><i class="fa-solid fa-lock"></i> Senha</label>
                     <input type="password" id="register-password" placeholder="••••••••" required>
                 </div>
-
                 <div id="register-error" class="error-msg"></div>
-
                 <button type="submit" class="primary-btn">Criar Minha Conta</button>
             </form>
         </div>
     </div>
 
-    <!-- MODAL CONFIGURAÇÃO DE EMPRESA -->
+    <!-- MODAL 2: NOTIFICAÇÕES E ATUALIZAÇÕES DA PLATAFORMA -->
+    <div id="notifications-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-title-row">
+                <h3><i class="fa-regular fa-bell"></i> Notificações</h3>
+                <i class="fa-solid fa-xmark close-btn" onclick="closeNotificationsModal()"></i>
+            </div>
+            <p class="modal-subtitle">Atualizações e avisos do sistema da CLOUDIX AI.</p>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 9px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <strong style="font-size: 11px; color: var(--cloudix-purple);">🚀 Novo Modelo Gemini Integrado</strong>
+                        <small style="font-size: 9px; color: var(--muted);">Hoje</small>
+                    </div>
+                    <p style="font-size: 10px; color: #a3b1c6; line-height: 1.4;">A CLOUDIX AI agora processa planilhas financeiras completas e gera diagnósticos automáticos.</p>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 9px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <strong style="font-size: 11px; color: #4ade80;">Sistema Operacional</strong>
+                        <small style="font-size: 9px; color: var(--muted);">Status</small>
+                    </div>
+                    <p style="font-size: 10px; color: #a3b1c6; line-height: 1.4;">Todos os módulos de inteligência estão ativos e operando normalmente.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: CONFIGURAÇÕES DA CONTA -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-title-row">
+                <h3><i class="fa-solid fa-gear"></i> Configurações da Conta</h3>
+                <i class="fa-solid fa-xmark close-btn" onclick="closeSettingsModal()"></i>
+            </div>
+            <p class="modal-subtitle">Gerencie suas preferências de usuário e conta.</p>
+
+            <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+                <div class="input-group">
+                    <label>Seu Nome</label>
+                    <input type="text" id="settings-user-name" placeholder="Nome do Usuário" readonly style="opacity: 0.7;">
+                </div>
+
+                <div class="input-group">
+                    <label>Preferência do Modelo da IA</label>
+                    <input type="text" value="Google Gemini (Análise Estratégica Avançada)" readonly style="opacity: 0.7;">
+                </div>
+
+                <button type="button" onclick="logout(event)" class="primary-btn" style="background: #e74c3c; box-shadow: none;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair da Minha Conta
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: DADOS DA EMPRESA -->
     <div id="company-modal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-title-row">

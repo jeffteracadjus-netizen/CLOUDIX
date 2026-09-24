@@ -15,7 +15,7 @@ function getAuthToken() {
 }
 
 /* ==========================================================
-   INICIALIZAÇÃO DA PÁGINA E CARREGAMENTO DE DADOS
+   INICIALIZAÇÃO DA PÁGINA
    ========================================================== */
 document.addEventListener("DOMContentLoaded", () => {
     const token = getAuthToken();
@@ -28,14 +28,36 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ==========================================================
-   MODAIS (AUTH & COMPANY)
+   MODAIS DA APLICAÇÃO (CADA UM COM SUA FUNÇÃO)
    ========================================================== */
 function openAuthModal() {
     document.querySelector("#auth-modal").classList.add("active");
 }
-
 function closeAuthModal() {
     document.querySelector("#auth-modal").classList.remove("active");
+}
+
+function openNotificationsModal() {
+    document.querySelector("#notifications-modal").classList.add("active");
+}
+function closeNotificationsModal() {
+    document.querySelector("#notifications-modal").classList.remove("active");
+}
+
+function openSettingsModal() {
+    const userName = document.querySelector("#sidebar-user-name").innerText;
+    document.querySelector("#settings-user-name").value = userName;
+    document.querySelector("#settings-modal").classList.add("active");
+}
+function closeSettingsModal() {
+    document.querySelector("#settings-modal").classList.remove("active");
+}
+
+function openCompanyModal() {
+    document.querySelector("#company-modal").classList.add("active");
+}
+function closeCompanyModal() {
+    document.querySelector("#company-modal").classList.remove("active");
 }
 
 function switchAuthTab(tab) {
@@ -51,14 +73,6 @@ function switchAuthTab(tab) {
     }
 }
 
-function openCompanyModal() {
-    document.querySelector("#company-modal").classList.add("active");
-}
-
-function closeCompanyModal() {
-    document.querySelector("#company-modal").classList.remove("active");
-}
-
 function logout(event) {
     if (event) event.stopPropagation();
     localStorage.removeItem("token");
@@ -67,25 +81,22 @@ function logout(event) {
 }
 
 /* ==========================================================
-   LOGIN E REGISTRO
+   AUTENTICAÇÃO (LOGIN / REGISTRO)
    ========================================================== */
 async function handleLogin(event) {
     event.preventDefault();
     const email = document.querySelector("#login-email").value;
     const password = document.querySelector("#login-password").value;
     const errorEl = document.querySelector("#login-error");
-
     errorEl.style.display = "none";
 
     try {
-        // Tenta login enviando JSON
         let response = await fetch("/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: email, username: email, password: password })
         });
 
-        // Se o backend esperar Form-Data (OAuth2 standard)
         if (response.status === 422) {
             const formData = new URLSearchParams();
             formData.append("username", email);
@@ -122,7 +133,6 @@ async function handleRegister(event) {
     const email = document.querySelector("#register-email").value;
     const password = document.querySelector("#register-password").value;
     const errorEl = document.querySelector("#register-error");
-
     errorEl.style.display = "none";
 
     try {
@@ -149,7 +159,7 @@ async function handleRegister(event) {
 }
 
 /* ==========================================================
-   CARREGAR & SALVAR EMPRESA
+   PERFIL DO USUÁRIO & EMPRESA
    ========================================================== */
 async function loadUserProfile() {
     const token = getAuthToken();
@@ -185,7 +195,6 @@ async function loadCompanyProfile() {
                 document.querySelector("#topbar-company-sector").innerText = company.sector || "Empresa ativa";
                 document.querySelector("#topbar-company-icon").innerText = company.name.charAt(0).toUpperCase();
 
-                // Preenche formulário do modal
                 document.querySelector("#company-name").value = company.name || "";
                 document.querySelector("#company-sector").value = company.sector || "";
                 document.querySelector("#company-size").value = company.size || "";
@@ -237,7 +246,7 @@ async function handleSaveCompany(event) {
 }
 
 /* ==========================================================
-   NAVEGAÇÃO MÓDULOS
+   NAVEGAÇÃO DOS MÓDULOS
    ========================================================== */
 function selectModule(moduleName, button = null) {
     if (moduleName === "dashboard") {
@@ -351,7 +360,17 @@ async function sendMessage() {
             let replyText = (data.response && typeof data.response === "object") ? data.response.text : (data.response || data.message);
             textContainer.innerHTML = formatMarkdown(replyText);
         } else {
-            textContainer.innerHTML = `<span style="color: #ff6b6b;">Erro: ${escapeHtml(data.detail || "Erro ao consultar a IA.")}</span>`;
+            // TRATAMENTO AMIGÁVEL DO ERRO 429
+            if (response.status === 429 || (data.detail && data.detail.includes("429"))) {
+                textContainer.innerHTML = `
+                    <div style="background: rgba(242, 135, 5, 0.1); border: 1px solid rgba(242, 135, 5, 0.3); border-radius: 8px; padding: 12px; color: #f39c12;">
+                        <strong>⏳ Limite Temporário de Consultas:</strong><br>
+                        Atingimos o limite de requisições do Gemini para este minuto. Aguarde cerca de 30 segundos e tente novamente.
+                    </div>
+                `;
+            } else {
+                textContainer.innerHTML = `<span style="color: #ff6b6b;">Erro: ${escapeHtml(data.detail || "Erro ao consultar a IA.")}</span>`;
+            }
         }
 
     } catch (error) {
@@ -433,6 +452,19 @@ async function handleFile(input) {
         });
 
         const aiData = await aiResponse.json();
+
+        // TRATAMENTO DO ERRO 429 DE COTA
+        if (aiResponse.status === 429 || (aiData.detail && aiData.detail.includes("429"))) {
+            if (progressBar) { progressBar.style.width = "100%"; progressBar.style.background = "#f39c12"; }
+            statusText.innerHTML = `
+                <div style="background: rgba(242, 135, 5, 0.1); border: 1px solid rgba(242, 135, 5, 0.3); border-radius: 8px; padding: 12px; color: #f39c12; font-size: 11px; margin-top: 10px;">
+                    <strong>⏳ Limite Temporário de Consultas Excedido:</strong><br>
+                    O limite do plano gratuito do Gemini foi atingido por este minuto. Aguarde 30 segundos e envie a pergunta novamente no chat abaixo!
+                </div>
+            `;
+            return;
+        }
+
         if (!aiResponse.ok) throw new Error(aiData.detail || "Erro ao consultar a IA.");
 
         if (progressBar) progressBar.style.width = "100%";
@@ -443,7 +475,7 @@ async function handleFile(input) {
         if (insightsContainer) {
             insightsContainer.innerHTML = `
                 <div style="background: rgba(18, 26, 38, 0.6); border: 1px solid rgba(86, 90, 166, 0.25); border-radius: 8px; padding: 15px; margin-top: 10px;">
-                    <strong style="color: #fff; font-size: 12px; display: block; margin-bottom: 10px;">📊 INSIGHTS GERADOS PELA CLOUDIX AI:</strong>
+                    <strong style="color: #fff; font-size: 12px; display: block; margin-bottom: 12px;">📊 INSIGHTS GERADOS PELA CLOUDIX AI:</strong>
                     ${formatMarkdown(resultText)}
                 </div>
             `;
@@ -456,7 +488,7 @@ async function handleFile(input) {
 }
 
 /* ==========================================================
-   UTILITÁRIOS
+   FORMATADOR AVANÇADO DE MARKDOWN (REMOVE ### E ASTERISCOS)
    ========================================================== */
 function escapeHtml(text) {
     const div = document.createElement("div");
@@ -467,8 +499,26 @@ function escapeHtml(text) {
 function formatMarkdown(text) {
     if (!text) return "";
     let formatted = escapeHtml(text);
-    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    formatted = formatted.replace(/^\s*\*\s+(.*)$/gm, '• $1');
+
+    // Converte Títulos Markdown ###, ##, # em tags HTML elegantes
+    formatted = formatted.replace(/^### (.*$)/gim, '<h4 style="color: #999de3; font-size: 13px; font-weight: 700; margin-top: 14px; margin-bottom: 6px;">$1</h4>');
+    formatted = formatted.replace(/^## (.*$)/gim, '<h3 style="color: #ffffff; font-size: 14px; font-weight: 700; margin-top: 16px; margin-bottom: 8px;">$1</h3>');
+    formatted = formatted.replace(/^# (.*$)/gim, '<h2 style="color: #ffffff; font-size: 16px; font-weight: 800; margin-top: 18px; margin-bottom: 10px;">$1</h2>');
+
+    // Converte Negrito **texto**
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #ffffff; font-weight: 600;">$1</strong>');
+
+    // Converte Itálico *texto*
+    formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    // Converte Linhas Separadoras ---
+    formatted = formatted.replace(/^---$/gim, '<hr style="border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 12px 0;">');
+
+    // Converte Marcadores (* item ou - item) em bullet points formatados
+    formatted = formatted.replace(/^\s*[\*\-]\s+(.*)$/gim, '<div style="margin-left: 8px; margin-bottom: 4px; display: flex; gap: 6px;"><span style="color: var(--cloudix-purple); font-weight: bold;">•</span><span>$1</span></div>');
+
+    // Converte Quebras de Linha
     formatted = formatted.replace(/\n/g, '<br>');
+
     return formatted;
 }
