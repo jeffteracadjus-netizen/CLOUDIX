@@ -68,50 +68,33 @@ function selectModule(moduleName, button = null) {
         return;
     }
 
-    document
-        .querySelector("#dashboard")
-        .classList.remove("active-section");
+    const dashboardEl = document.querySelector("#dashboard");
+    const modulePageEl = document.querySelector("#module-page");
 
-    document
-        .querySelector("#module-page")
-        .classList.add("active-section");
+    if (dashboardEl) dashboardEl.classList.remove("active-section");
+    if (modulePageEl) modulePageEl.classList.add("active-section");
 
-    document
-        .querySelector("#page-title")
-        .innerText = module.title;
+    const pageTitle = document.querySelector("#page-title");
+    if (pageTitle) pageTitle.innerText = module.title;
 
-    document
-        .querySelector("#selected-module-label")
-        .innerText = module.label;
+    const selectedLabel = document.querySelector("#selected-module-label");
+    if (selectedLabel) selectedLabel.innerText = module.label;
 
-    document
-        .querySelector("#selected-module-title")
-        .innerText = module.pageTitle;
+    const selectedTitle = document.querySelector("#selected-module-title");
+    if (selectedTitle) selectedTitle.innerText = module.pageTitle;
 
-    const icon = document.querySelector(
-        "#selected-module-icon i"
-    );
+    const icon = document.querySelector("#selected-module-icon i");
+    if (icon) icon.className = "fa-solid " + module.icon;
 
-    icon.className =
-        "fa-solid " + module.icon;
-
-    document
-        .querySelectorAll(".nav-item")
-        .forEach(item => {
-            item.classList.remove("active");
-        });
+    document.querySelectorAll(".nav-item").forEach(item => {
+        item.classList.remove("active");
+    });
 
     if (button) {
         button.classList.add("active");
     } else {
-        const navButton =
-            document.querySelector(
-                `.nav-item[onclick*="'${moduleName}'"]`
-            );
-
-        if (navButton) {
-            navButton.classList.add("active");
-        }
+        const navButton = document.querySelector(`.nav-item[onclick*="'${moduleName}'"]`);
+        if (navButton) navButton.classList.add("active");
     }
 
 }
@@ -123,33 +106,22 @@ function selectModule(moduleName, button = null) {
 
 function showDashboard() {
 
-    document
-        .querySelector("#module-page")
-        .classList.remove("active-section");
+    const dashboardEl = document.querySelector("#dashboard");
+    const modulePageEl = document.querySelector("#module-page");
 
-    document
-        .querySelector("#dashboard")
-        .classList.add("active-section");
+    if (modulePageEl) modulePageEl.classList.remove("active-section");
+    if (dashboardEl) dashboardEl.classList.add("active-section");
 
-    document
-        .querySelector("#page-title")
-        .innerText = "Dashboard";
+    const pageTitle = document.querySelector("#page-title");
+    if (pageTitle) pageTitle.innerText = "Dashboard";
 
-    document
-        .querySelectorAll(".nav-item")
-        .forEach(item => {
-            item.classList.remove("active");
-        });
+    document.querySelectorAll(".nav-item").forEach(item => {
+        item.classList.remove("active");
+    });
 
-    const buttons =
-        document.querySelectorAll(".nav-item");
-
+    const buttons = document.querySelectorAll(".nav-item");
     buttons.forEach(button => {
-        if (
-            button.innerText
-                .toLowerCase()
-                .includes("dashboard")
-        ) {
+        if (button.innerText.toLowerCase().includes("dashboard")) {
             button.classList.add("active");
         }
     });
@@ -163,23 +135,17 @@ function showDashboard() {
 
 async function sendMessage() {
 
-    const input =
-        document.querySelector("#chat-input");
+    const input = document.querySelector("#chat-input");
+    if (!input) return;
 
-    const message =
-        input.value.trim();
+    const message = input.value.trim();
+    if (!message) return;
 
-    if (!message) {
-        return;
-    }
+    const chatInputArea = document.querySelector(".chat-input");
+    const parentContainer = chatInputArea ? chatInputArea.parentElement : document.body;
 
-    const chat =
-        document.querySelector(".chat-message");
-
-    // 1. Inserir a mensagem do usuário no chat
-    const userMessage =
-        document.createElement("div");
-
+    // 1. Inserir a mensagem do utilizador no chat
+    const userMessage = document.createElement("div");
     userMessage.style.display = "flex";
     userMessage.style.justifyContent = "flex-end";
     userMessage.style.marginTop = "10px";
@@ -200,19 +166,17 @@ async function sendMessage() {
         </div>
     `;
 
-    chat.parentElement.insertBefore(
-        userMessage,
-        document.querySelector(".chat-input")
-    );
+    if (chatInputArea) {
+        parentContainer.insertBefore(userMessage, chatInputArea);
+    } else {
+        parentContainer.appendChild(userMessage);
+    }
 
     input.value = "";
 
     // 2. Inserir o balão de carregamento da CLOUDIX AI
-    const aiMessage =
-        document.createElement("div");
-
-    aiMessage.className =
-        "chat-message";
+    const aiMessage = document.createElement("div");
+    aiMessage.className = "chat-message";
 
     aiMessage.innerHTML = `
         <div class="ai-avatar">
@@ -221,20 +185,20 @@ async function sendMessage() {
         <div class="message-bubble">
             <strong>CLOUDIX AI</strong>
             <p class="ai-text-response">
-                <em>Analisando sua solicitação...</em>
+                <em>Analisando a sua solicitação...</em>
             </p>
         </div>
     `;
 
-    chat.parentElement.insertBefore(
-        aiMessage,
-        document.querySelector(".chat-input")
-    );
+    if (chatInputArea) {
+        parentContainer.insertBefore(aiMessage, chatInputArea);
+    } else {
+        parentContainer.appendChild(aiMessage);
+    }
 
     const textContainer = aiMessage.querySelector(".ai-text-response");
     const token = getAuthToken();
 
-    // Verificação de autenticação no cliente
     if (!token) {
         textContainer.innerHTML = `
             <span style="color: #ff6b6b;">
@@ -254,7 +218,6 @@ async function sendMessage() {
             body: JSON.stringify({ message: message })
         });
 
-        // Tratamento de sessão expirada ou não autorizada
         if (response.status === 401) {
             textContainer.innerHTML = `
                 <span style="color: #ff6b6b;">
@@ -289,7 +252,7 @@ async function sendMessage() {
         console.error("Erro na comunicação com a API:", error);
         textContainer.innerHTML = `
             <span style="color: #ff6b6b;">
-                Erro de conexão com o servidor da CLOUDIX AI. Tente novamente em instantes.
+                Erro de ligação com o servidor da CLOUDIX AI. Tente novamente em instantes.
             </span>
         `;
     }
@@ -303,11 +266,8 @@ async function sendMessage() {
 
 function escapeHtml(text) {
 
-    const div =
-        document.createElement("div");
-
+    const div = document.createElement("div");
     div.innerText = text;
-
     return div.innerHTML;
 
 }
@@ -318,7 +278,7 @@ function formatMarkdown(text) {
     // Transforma **negrito** em <strong>negrito</strong>
     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     // Transforma marcadores (* item) em bullet points
-    formatted = formatted.replace(/^\s*\*\s+(.*)$/gmol, '• $1');
+    formatted = formatted.replace(/^\s*\*\s+(.*)$/gm, '• $1');
     // Transforma quebras de linha em <br>
     formatted = formatted.replace(/\n/g, '<br>');
     return formatted;
@@ -331,17 +291,14 @@ function formatMarkdown(text) {
 
 async function handleFile(input) {
 
-    if (!input.files.length) {
+    if (!input.files || !input.files.length) {
         return;
     }
 
-    const file =
-        input.files[0];
+    const file = input.files[0];
+    const analysis = document.querySelector("#analysis-content");
 
-    const analysis =
-        document.querySelector(
-            "#analysis-content"
-        );
+    if (!analysis) return;
 
     analysis.innerHTML = `
         <div style="padding: 25px 0;">
@@ -395,13 +352,17 @@ async function handleFile(input) {
     const token = getAuthToken();
 
     if (!token) {
-        progressBar.style.width = "100%";
-        progressBar.style.background = "#e74c3c";
-        statusText.innerHTML = `
-            <span style="color: #e74c3c;">
-                <strong>Erro de Autenticação:</strong> Você precisa estar logado para enviar arquivos.
-            </span>
-        `;
+        if (progressBar) {
+            progressBar.style.width = "100%";
+            progressBar.style.background = "#e74c3c";
+        }
+        if (statusText) {
+            statusText.innerHTML = `
+                <span style="color: #e74c3c;">
+                    <strong>Erro de Autenticação:</strong> É necessário estar autenticado para enviar ficheiros.
+                </span>
+            `;
+        }
         return;
     }
 
@@ -409,9 +370,8 @@ async function handleFile(input) {
     formData.append("file", file);
 
     try {
-        // Passo 1: Enviar planilha para o backend (/financial/upload)
-        progressBar.style.width = "40%";
-        statusText.innerText = "Processando e estruturando dados da planilha...";
+        if (progressBar) progressBar.style.width = "40%";
+        if (statusText) statusText.innerText = "A processar dados da planilha...";
 
         const uploadResponse = await fetch("/financial/upload", {
             method: "POST",
@@ -427,12 +387,11 @@ async function handleFile(input) {
 
         if (!uploadResponse.ok) {
             const errData = await uploadResponse.json().catch(() => ({}));
-            throw new Error(errData.detail || "Erro ao fazer upload do arquivo.");
+            throw new Error(errData.detail || "Erro ao fazer upload do ficheiro.");
         }
 
-        // Passo 2: Solicitar diagnóstico inteligente da planilha ao Gemini (/ai/chat)
-        progressBar.style.width = "75%";
-        statusText.innerText = "Gerando diagnósticos e insights financeiros...";
+        if (progressBar) progressBar.style.width = "75%";
+        if (statusText) statusText.innerText = "A gerar diagnósticos e insights financeiros...";
 
         const aiResponse = await fetch("/ai/chat", {
             method: "POST",
@@ -455,9 +414,8 @@ async function handleFile(input) {
             throw new Error(aiData.detail || "Erro ao consultar a CLOUDIX AI.");
         }
 
-        // Passo 3: Exibir a resposta real da IA na tela
-        progressBar.style.width = "100%";
-        statusText.innerText = "Análise financeira concluída com sucesso!";
+        if (progressBar) progressBar.style.width = "100%";
+        if (statusText) statusText.innerText = "Análise financeira concluída com sucesso!";
 
         let resultText = "";
         if (aiData.response && typeof aiData.response === "object" && aiData.response.text) {
@@ -468,20 +426,26 @@ async function handleFile(input) {
             resultText = "Análise concluída.";
         }
 
-        insightsContainer.innerHTML = `
-            <div style="background: rgba(18, 26, 38, 0.6); border: 1px solid rgba(86, 90, 166, 0.25); border-radius: 8px; padding: 15px; margin-top: 10px;">
-                <strong style="color: #fff; font-size: 12px; display: block; margin-bottom: 10px;">
-                    📊 INSIGHTS GERADOS PELA CLOUDIX AI:
-                </strong>
-                ${formatMarkdown(resultText)}
-            </div>
-        `;
+        if (insightsContainer) {
+            insightsContainer.innerHTML = `
+                <div style="background: rgba(18, 26, 38, 0.6); border: 1px solid rgba(86, 90, 166, 0.25); border-radius: 8px; padding: 15px; margin-top: 10px;">
+                    <strong style="color: #fff; font-size: 12px; display: block; margin-bottom: 10px;">
+                        📊 INSIGHTS GERADOS PELA CLOUDIX AI:
+                    </strong>
+                    ${formatMarkdown(resultText)}
+                </div>
+            `;
+        }
 
     } catch (error) {
         console.error("Erro no processamento da planilha:", error);
-        progressBar.style.width = "100%";
-        progressBar.style.background = "#e74c3c";
-        statusText.innerHTML = `<span style="color: #e74c3c;">Erro: ${escapeHtml(error.message)}</span>`;
+        if (progressBar) {
+            progressBar.style.width = "100%";
+            progressBar.style.background = "#e74c3c";
+        }
+        if (statusText) {
+            statusText.innerHTML = `<span style="color: #e74c3c;">Erro: ${escapeHtml(error.message)}</span>`;
+        }
     }
 
 }
