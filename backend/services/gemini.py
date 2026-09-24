@@ -1,79 +1,43 @@
 import os
+import time
+import google.generativeai as genai
 
-from dotenv import load_dotenv
-from google import genai
-
-
-# ==========================================================
-# CONFIGURAÇÃO
-# ==========================================================
-
-load_dotenv()
-
+# Configura a chave de API do Gemini
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-if not GEMINI_API_KEY:
-    raise RuntimeError(
-        "GEMINI_API_KEY não foi configurada no arquivo .env"
-    )
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 
-# ==========================================================
-# CLIENTE GEMINI
-# ==========================================================
+def ask_gemini(prompt: str, retries: int = 3, delay: int = 3):
+    """
+    Envia solicitações para o Gemini com sistema de re-tentativa automática (retry pattern)
+    em caso de limite de requisições excedido (Erro 429).
+    """
+    if not GEMINI_API_KEY:
+        return {"text": "Chave da API do Gemini não configurada no servidor."}
 
-client = genai.Client(
-    api_key=GEMINI_API_KEY
-)
+    model = genai.GenerativeModel("gemini-1.5-flash")
 
+    for attempt in range(retries):
+        try:
+            response = model.generate_content(prompt)
+            return {"text": response.text}
 
-# ==========================================================
-# CONFIGURAÇÕES
-# ==========================================================
+        except Exception as e:
+            error_msg = str(e)
 
-MODEL = "gemini-3.6-flash"
+            # Verifica se o erro é de cota/limite de requisições (429)
+            if any(k in error_msg for k in ["429", "Quota", "Rate limit", "RESOURCE_EXHAUSTED"]):
+                if attempt < retries - 1:
+                    print(
+                        f"[Gemini] Cota temporária atingida. Aguardando {delay}s (Tentativa {attempt + 1}/{retries})..."
+                    )
+                    time.sleep(delay)
+                    delay *= 2  # Aumenta o tempo de espera (3s, 6s, 12s)
+                    continue
 
-
-# ==========================================================
-# CLOUDIX AI
-# ==========================================================
-
-def ask_gemini(
-    message: str,
-    system_instruction: str | None = None,
-    previous_interaction_id: str | None = None
-):
-
-    try:
-
-        interaction_data = {
-            "model": MODEL,
-            "input": message
-        }
-
-        if system_instruction:
-
-            interaction_data["system_instruction"] = (
-                system_instruction
-            )
-
-        if previous_interaction_id:
-
-            interaction_data[
-                "previous_interaction_id"
-            ] = previous_interaction_id
-
-        interaction = client.interactions.create(
-            **interaction_data
-        )
-
-        return {
-            "text": interaction.output_text,
-            "interaction_id": interaction.id
-        }
-
-    except Exception as error:
-
-        raise RuntimeError(
-            f"Erro ao consultar o Gemini: {str(error)}"
-        ) from error
+            print(f"[Gemini Error]: {error_msg}")
+            return {
+                "text": "A IA está com um alto volume de requisições no momento. Por favor, tente enviar sua pergunta novamente em alguns segundos."
+            }
