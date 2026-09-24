@@ -132,3 +132,52 @@ class FinancialFile(Base):
         "Company",
         back_populates="financial_files"
     )
+
+class AIConversation(Base):
+    __tablename__ = "ai_conversations"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False
+    )
+
+    company_id = Column(
+        Integer,
+        ForeignKey("companies.id"),
+        nullable=False
+    )
+
+    user_message = Column(
+        Text,
+        nullable=False
+    )
+
+    ai_response = Column(
+        Text,
+        nullable=False
+    )
+
+    interaction_id = Column(
+        String,
+        nullable=True
+    )
+
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    user = relationship(
+        "User"
+    )
+
+    company = relationship(
+        "Company"
+    )

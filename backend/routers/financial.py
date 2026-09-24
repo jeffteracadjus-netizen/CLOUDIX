@@ -18,8 +18,8 @@ from models import Company, FinancialFile, User
 from auth import get_current_user
 
 from services.spreadsheet_analyzer import analyze_spreadsheet
+from services.metrics_engine import calculate_metrics
 from services.intelligence import generate_intelligence
-
 
 router = APIRouter(
     prefix="/financial",
@@ -191,6 +191,12 @@ def analyze_financial_file(
     analysis = analyze_spreadsheet(
         dataframe
     )
+
+    metrics = calculate_metrics(
+        dataframe
+    )
+
+    analysis["metrics"] = metrics
 
     intelligence = generate_intelligence(
         analysis

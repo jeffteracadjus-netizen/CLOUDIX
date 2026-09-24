@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
@@ -9,7 +10,7 @@ import models
 from routers.auth import router as auth_router
 from routers.company import router as company_router
 from routers.financial import router as financial_router
-
+from routers.ai import router as ai_router
 
 # ==========================================================
 # BANCO DE DADOS
@@ -30,12 +31,26 @@ app = FastAPI(
 
 
 # ==========================================================
+# CONFIGURAÇÃO DE CORS
+# ==========================================================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite requisições de qualquer origem
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite GET, POST, PUT, DELETE, etc.
+    allow_headers=["*"],  # Permite todos os cabeçalhos (inclusive Authorization/JWT)
+)
+
+
+# ==========================================================
 # ROTAS DA API
 # ==========================================================
 
 app.include_router(auth_router)
 app.include_router(company_router)
 app.include_router(financial_router)
+app.include_router(ai_router)
 
 
 # ==========================================================
